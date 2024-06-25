@@ -8,7 +8,8 @@ function App() {
 
   const checkAdd = () => {
     if (todo.trim() !== '') { 
-      setTodos([...todos, { id: uuidv4(), todo: todo, isCompleted: false }]);
+      const newTodo = {id: uuidv4(),todo: todo,isCompleted: false,createdAt: new Date(),updatedAt: null};
+      setTodos([...todos, newTodo]);
       setTodo('');
     }
   };
@@ -28,7 +29,8 @@ function App() {
 
   const checkUpdate = () => {
     if (todo.trim() !== '') {
-      setTodos([...todos, { id: uuidv4(), todo: todo, isCompleted: false }]);
+      const updatedTodo = {id: uuidv4(),todo: todo,isCompleted: false,createdAt: new Date(),updatedAt: null};
+      setTodos([...todos, updatedTodo]);
       setTodo('');
     }
   };
@@ -43,11 +45,12 @@ function App() {
       <h1 className='main'>Todo App</h1>
       <input type="text" className='taskarea' placeholder="Write your next task" value={todo} onChange={checkChange}/>
       <button className='add' onClick={todo ? checkUpdate : checkAdd}>{todo ? 'Update' : 'Add'}</button>
-
       <ul>
         {todos.map(item => (
           <li className='list' key={item.id}>{item.todo}
             <div className='todoedit'>
+            <p>{item.createdAt.toLocaleString()}</p>
+              {item.updatedAt && <p> {item.updatedAt.toLocaleString()}</p>}
               <button onClick={() => checkEdit(item.id)}>Edit</button>
               <button onClick={() => checkDelete(item.id)}>Delete</button>
             </div>
