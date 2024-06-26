@@ -1,16 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid'; 
+import axios from 'axios';
 import './App.css';
 
 function App() {
   const [todo, setTodo] = useState('');
   const [todos, setTodos] = useState([]);
 
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/todos')
+      .then(response => {
+        setTodos(response.data);
+      })
+      .catch(error => {
+        console.error('There was an error fetching the todos!', error);
+      });
+  }, []);
+
   const checkAdd = () => {
     if (todo.trim() !== '') { 
-      const newTodo = {id: uuidv4(),todo: todo,createdAt: new Date(),updatedAt: null};
-      setTodos([...todos, newTodo]);
-      setTodo('');
+      const newTodo = { id: uuidv4(), todo: todo, createdAt: new Date(), updatedAt: null };
+      axios.post('http://localhost:5000/api/todos', newTodo)
+        .then(response => {
+          setTodos([...todos, response.data]);
+          setTodo('');
+        })
+        .catch(error => {
+          console.error('There was an error adding the todo!', error);
+        });
     }
   };
 
@@ -29,15 +46,27 @@ function App() {
 
   const checkUpdate = () => {
     if (todo.trim() !== '') {
-      const updatedTodo = {id: uuidv4(),todo: todo,createdAt: new Date(),updatedAt: null};
-      setTodos([...todos, updatedTodo]);
-      setTodo('');
+      const updatedTodo = { id: uuidv4(), todo: todo, createdAt: new Date(), updatedAt: new Date() };
+      axios.put(`http://localhost:5000/api/todos/${updatedTodo.id}`, updatedTodo)
+        .then(response => {
+          setTodos([...todos, response.data]);
+          setTodo('');
+        })
+        .catch(error => {
+          console.error('There was an error updating the todo!', error);
+        });
     }
   };
 
   const checkDelete = (id) => {
-    const newTodos = todos.filter(item => item.id !== id);
-    setTodos(newTodos);
+    axios.delete(`http://localhost:5000/api/todos/${id}`)
+      .then(() => {
+        const newTodos = todos.filter(item => item.id !== id);
+        setTodos(newTodos);
+      })
+      .catch(error => {
+        console.error('There was an error deleting the todo!', error);
+      });
   };
 
   return (
@@ -49,8 +78,7 @@ function App() {
         {todos.map(item => (
           <li className='list' key={item.id}>{item.todo}
             <div className='todoedit'>
-            <p>{item.createdAt.toLocaleString()}</p>
-              {item.updatedAt && <p> {item.updatedAt.toLocaleString()}</p>}
+              {item.updatedAt && <p>{new Date().toLocaleString()}</p>}
               <button onClick={() => checkEdit(item.id)}>Edit</button>
               <button onClick={() => checkDelete(item.id)}>Delete</button>
             </div>
