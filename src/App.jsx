@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid'; 
 import axios from 'axios';
 import './App.css';
+import Login from './components/Login';
 
 function App() {
   const [todo, setTodo] = useState('');
@@ -13,7 +14,7 @@ function App() {
         setTodos(response.data);
       })
       .catch(error => {
-        console.error('There was an error fetching the todos!', error);
+        console.error('Error while fetching the todos!', error);
       });
   }, []);
 
@@ -26,7 +27,7 @@ function App() {
           setTodo('');
         })
         .catch(error => {
-          console.error('There was an error adding the todo!', error);
+          console.error('Error while adding the todo!', error);
         });
     }
   };
@@ -53,7 +54,7 @@ function App() {
           setTodo('');
         })
         .catch(error => {
-          console.error('There was an error updating the todo!', error);
+          console.error('Error while updating the todo!', error);
         });
     }
   };
@@ -65,12 +66,14 @@ function App() {
         setTodos(newTodos);
       })
       .catch(error => {
-        console.error('There was an error deleting the todo!', error);
+        console.error('Error while deleting the todo!', error);
       });
   };
 
   return (
-    <div className="App">
+    <div className='wrap'>
+      <Login/>
+     <div className="App">
       <h1 className='main'>Todo App</h1>
       <input type="text" className='taskarea' placeholder="Write your next task" value={todo} onChange={checkChange}/>
       <button className='add' onClick={todo ? checkUpdate : checkAdd}>{todo ? 'Update' : 'Add'}</button>
@@ -85,6 +88,7 @@ function App() {
           </li>
         ))}
       </ul>
+     </div>
     </div>
   );
 }
