@@ -1,0 +1,264 @@
+// Without time and date features
+import { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid'; 
+import './App.css';
+
+function App() {
+  const [todo, setTodo] = useState('');
+  const [todos, setTodos] = useState([]);
+
+  const checkAdd = () => {
+    if (todo.trim() !== '') { 
+      setTodos([...todos, { id: uuidv4(), todo: todo, isCompleted: false }]);
+      setTodo('');
+    }
+  };
+
+  const checkChange = (e) => {
+    setTodo(e.target.value);
+  };
+
+  const checkEdit = (id) => {
+    const todoToEdit = todos.find(item => item.id === id);
+    if (todoToEdit) {
+      setTodo(todoToEdit.todo);
+      const newTodos = todos.filter(item => item.id !== id);
+      setTodos(newTodos);
+    }
+  };
+
+  const checkUpdate = () => {
+    if (todo.trim() !== '') {
+      setTodos([...todos, { id: uuidv4(), todo: todo, isCompleted: false }]);
+      setTodo('');
+    }
+  };
+
+  const checkDelete = (id) => {
+    const newTodos = todos.filter(item => item.id !== id);
+    setTodos(newTodos);
+  };
+
+  return (
+    <div className="App">
+      <h1 className='main'>Todo App</h1>
+      <input type="text" className='taskarea' placeholder="Write your next task" value={todo} onChange={checkChange}/>
+      <button className='add' onClick={todo ? checkUpdate : checkAdd}>{todo ? 'Update' : 'Add'}</button>
+
+      <ul>
+        {todos.map(item => (
+          <li className='list' key={item.id}>{item.todo}
+            <div className='todoedit'>
+              <button onClick={() => checkEdit(item.id)}>Edit</button>
+              <button onClick={() => checkDelete(item.id)}>Delete</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+
+// With Time and Date features
+import { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid'; 
+import './App.css';
+
+function App() {
+  const [todo, setTodo] = useState('');
+  const [todos, setTodos] = useState([]);
+
+  const checkAdd = () => {
+    if (todo.trim() !== '') { 
+      const newTodo = {id: uuidv4(),todo: todo,createdAt: new Date(),updatedAt: null};
+      setTodos([...todos, newTodo]);
+      setTodo('');
+    }
+  };
+
+  const checkChange = (e) => {
+    setTodo(e.target.value);
+  };
+
+  const checkEdit = (id) => {
+    const todoToEdit = todos.find(item => item.id === id);
+    if (todoToEdit) {
+      setTodo(todoToEdit.todo);
+      const newTodos = todos.filter(item => item.id !== id);
+      setTodos(newTodos);
+    }
+  };
+
+  const checkUpdate = () => {
+    if (todo.trim() !== '') {
+      const updatedTodo = {id: uuidv4(),todo: todo,createdAt: new Date(),updatedAt: null};
+      setTodos([...todos, updatedTodo]);
+      setTodo('');
+    }
+  };
+
+  const checkDelete = (id) => {
+    const newTodos = todos.filter(item => item.id !== id);
+    setTodos(newTodos);
+  };
+
+  return (
+    <div className="App">
+      <h1 className='main'>Todo App</h1>
+      <input type="text" className='taskarea' placeholder="Write your next task" value={todo} onChange={checkChange}/>
+      <button className='add' onClick={todo ? checkUpdate : checkAdd}>{todo ? 'Update' : 'Add'}</button>
+      <ul>
+        {todos.map(item => (
+          <li className='list' key={item.id}>{item.todo}
+            <div className='todoedit'>
+            <p>{item.createdAt.toLocaleString()}</p>
+              {item.updatedAt && <p> {item.updatedAt.toLocaleString()}</p>}
+              <button onClick={() => checkEdit(item.id)}>Edit</button>
+              <button onClick={() => checkDelete(item.id)}>Delete</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+
+// With Backend
+import { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid'; 
+import axios from 'axios';
+import './App.css';
+
+function App() {
+  const [todo, setTodo] = useState('');
+  const [todos, setTodos] = useState([]);
+
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/todos')
+      .then(response => {
+        setTodos(response.data);
+      })
+      .catch(error => {
+        console.error('There was an error fetching the todos!', error);
+      });
+  }, []);
+
+  const checkAdd = () => {
+    if (todo.trim() !== '') { 
+      const newTodo = { id: uuidv4(), todo: todo, createdAt: new Date(), updatedAt: null };
+      axios.post('http://localhost:5000/api/todos', newTodo)
+        .then(response => {
+          setTodos([...todos, response.data]);
+          setTodo('');
+        })
+        .catch(error => {
+          console.error('There was an error adding the todo!', error);
+        });
+    }
+  };
+
+  const checkChange = (e) => {
+    setTodo(e.target.value);
+  };
+
+  const checkEdit = (id) => {
+    const todoToEdit = todos.find(item => item.id === id);
+    if (todoToEdit) {
+      setTodo(todoToEdit.todo);
+      const newTodos = todos.filter(item => item.id !== id);
+      setTodos(newTodos);
+    }
+  };
+
+  const checkUpdate = () => {
+    if (todo.trim() !== '') {
+      const updatedTodo = { id: uuidv4(), todo: todo, createdAt: new Date(), updatedAt: new Date() };
+      axios.put(`http://localhost:5000/api/todos/${updatedTodo.id}`, updatedTodo)
+        .then(response => {
+          setTodos([...todos, response.data]);
+          setTodo('');
+        })
+        .catch(error => {
+          console.error('There was an error updating the todo!', error);
+        });
+    }
+  };
+
+  const checkDelete = (id) => {
+    axios.delete(`http://localhost:5000/api/todos/${id}`)
+      .then(() => {
+        const newTodos = todos.filter(item => item.id !== id);
+        setTodos(newTodos);
+      })
+      .catch(error => {
+        console.error('There was an error deleting the todo!', error);
+      });
+  };
+
+  return (
+    <div className="App">
+      <h1 className='main'>Todo App</h1>
+      <input type="text" className='taskarea' placeholder="Write your next task" value={todo} onChange={checkChange}/>
+      <button className='add' onClick={todo ? checkUpdate : checkAdd}>{todo ? 'Update' : 'Add'}</button>
+      <ul>
+        {todos.map(item => (
+          <li className='list' key={item.id}>{item.todo}
+            <div className='todoedit'>
+              {item.updatedAt && <p>{new Date().toLocaleString()}</p>}
+              <button onClick={() => checkEdit(item.id)}>Edit</button>
+              <button onClick={() => checkDelete(item.id)}>Delete</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+
+// Backend
+import express from 'express';
+import cors from 'cors';
+import { v4 as uuidv4 } from 'uuid';
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(cors());
+app.use(express.json());
+
+let todos = [];
+
+// All Todos
+app.get('/api/todos', (req, res) => {
+  res.json(todos);
+});
+
+// Add todo
+app.post('/api/todos', (req, res) => {
+  const newTodo = { ...req.body, id: uuidv4() };
+  todos.push(newTodo);
+  res.status(201).json(newTodo);
+});
+
+// Edit todo
+app.put('/api/todos/:id', (req, res) => {
+  const { id } = req.params;
+  const updatedTodo = { ...req.body, updatedAt: new Date() };
+  todos = todos.map(todo => (todo.id === id ? updatedTodo : todo));
+  res.json(updatedTodo);
+});
+
+// Delete todo
+app.delete('/api/todos/:id', (req, res) => {
+  const { id } = req.params;
+  todos = todos.filter(todo => todo.id !== id);
+  res.status(204).send();
+});
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
